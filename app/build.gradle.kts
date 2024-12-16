@@ -51,7 +51,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-
+    implementation ("androidx.core:core:1.12.0")
     implementation ("com.google.firebase:firebase-auth")
     implementation ("com.google.firebase:firebase-storage")
     implementation ("com.google.firebase:firebase-firestore")

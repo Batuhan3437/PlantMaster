@@ -1,6 +1,12 @@
 package com.erenbasar.plantmaster.ui.profile;
 
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.UnderlineSpan;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +14,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -25,6 +33,7 @@ public class ProfileFragment extends Fragment {
     private FragmentProfileBinding binding;
     private FirebaseAuth mAuth;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         ProfileViewModel profileViewModel =
@@ -40,12 +49,41 @@ public class ProfileFragment extends Fragment {
 
         // Butonlara tıklama olayları bağlandı
         binding.loginButton.setOnClickListener(this::loginClicked);
-        binding.signupButton.setOnClickListener(this::signupClicked);
+
+
+        String fullText = getString(R.string.login_message);
+        SpannableString spannableString = new SpannableString(fullText);
+
+
+        int signUpStart = fullText.indexOf("Sign up");
+        int signUpEnd = signUpStart + "Sign up".length();
+
+
+        spannableString.setSpan(new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+
+                NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+                navController.navigate(R.id.SignupFragment);
+            }
+        }, signUpStart, signUpEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+
+        spannableString.setSpan(new ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.purple_500)),
+                signUpStart, signUpEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+
+        spannableString.setSpan(new UnderlineSpan(),
+                signUpStart, signUpEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+
+        textView.setText(spannableString);
+        textView.setMovementMethod(LinkMovementMethod.getInstance());
 
         return root;
     }
-    public void loginClicked (View view){
 
+    public void loginClicked(View view) {
         String email = binding.emailInput.getText().toString();
         String password = binding.passwordInput.getText().toString();
 
@@ -76,6 +114,7 @@ public class ProfileFragment extends Fragment {
                     Toast.makeText(getActivity(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                 });
     }
+
     // ProfileDetailFragment'e yönlendirme metodu
     private void navigateToProfileDetail() {
         // Navigation işlemi
@@ -83,8 +122,7 @@ public class ProfileFragment extends Fragment {
         navController.navigate(R.id.profileDetailFragment);
     }
 
-    public void signupClicked (View view){
-
+    public void signupClicked(View view) {
         String email = binding.emailInput.getText().toString();
         String password = binding.passwordInput.getText().toString();
 
@@ -103,39 +141,13 @@ public class ProfileFragment extends Fragment {
         }
 
         // Firebase ile kullanıcı oluşturma
-        mAuth.createUserWithEmailAndPassword(email, password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-            @Override
-            public void onSuccess(AuthResult authResult) {
-                // Başarılı olduğunda yapılacak işlemler
-                Toast.makeText(getActivity(), "Sign Up Successful!", Toast.LENGTH_LONG).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                // Başarısız olduğunda yapılacak işlemler
-                Toast.makeText(getActivity(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
+        mAuth.createUserWithEmailAndPassword(email, password).addOnSuccessListener(authResult -> {
+            // Başarılı olduğunda yapılacak işlemler
+            Toast.makeText(getActivity(), "Sign Up Successful!", Toast.LENGTH_LONG).show();
+        }).addOnFailureListener(e -> {
+            // Başarısız olduğunda yapılacak işlemler
+            Toast.makeText(getActivity(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         });
-
-
-//        if(email.isEmpty() || password.isEmpty()){
-//            // getActivity() ile Fragment in bağlı olduğu Activity nin Context ini alıyoruz
-//            Toast.makeText(getActivity(),"Enter email and password",Toast.LENGTH_LONG).show();
-//        }else {
-//            mAuth.createUserWithEmailAndPassword(email,password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-//                @Override
-//                public void onSuccess(AuthResult authResult) {
-//                    // Başarılı olduğunda yapılacak işlemler
-//                    Toast.makeText(getActivity(), "Sign Up Successful!", Toast.LENGTH_LONG).show();
-//                }
-//            }).addOnFailureListener(new OnFailureListener() {
-//                @Override
-//                public void onFailure(@NonNull Exception e) {
-//                    // Başarısız olduğunda yapılacak işlemler
-//                    Toast.makeText(getActivity(),e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
-//                }
-//            });
-//        }
     }
 
     @Override
